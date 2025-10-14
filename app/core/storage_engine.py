@@ -7,32 +7,35 @@ class StorageEngine:
     _instance = None
 
     def __new__(cls):
-        if cls._instance is None:
+        if not cls._instance:
             cls._instance = super().__new__(cls)
-        
         return cls._instance
-    
+
     def __init__(self):
-        if not os.path.exists(STORAGE_DIR):
+        # This check ensures the init logic runs only once.
+        if hasattr(self, '_initialized'):
+            return
+        if not STORAGE_DIR.exists():
             os.makedirs(STORAGE_DIR)
+        self._initialized = True
 
     def save(self, data: bytes) -> str:
         file_hash = generate_sha256_hash(data)
-        file_path = os.path.join(STORAGE_DIR, file_hash)
+        # Use pathlib for consistent path handling
+        file_path = STORAGE_DIR / file_hash
 
         with open(file_path, 'wb') as f:
             f.write(data)
 
         return file_hash
-    
-    def load(self, file_hash:str) -> bytes | None:
-        file_path = os.path.join(STORAGE_DIR, file_hash)
 
-        if not os.path.exists(file_path):
-            return file_path
-        
+    def load(self, file_hash: str) -> bytes | None:
+        # Use pathlib for consistent path handling
+        file_path = STORAGE_DIR / file_hash
+
+        if not file_path.exists():
+            # BUG FIX: Return None if the file doesn't exist, not the path.
+            return None
+
         with open(file_path, 'rb') as f:
             return f.read()
-
-
-
