@@ -2,7 +2,7 @@ import math
 import array
 import mmh3
 
-class Bloomfilter:
+class BloomFilter:
     def __init__(self, num_items: int , false_positive_prob: float):
         m = -(num_items * math.log(false_positive_prob)) / (math.log(2) ** 2)
         self.size = int(m)
